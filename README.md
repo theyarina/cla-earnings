@@ -40,6 +40,9 @@ which carries cohort year and measurement year as columns.
                                 and the official national median across all
                                 institutions (Dept of Education), plus counts and
                                 Cal Poly's percentile against each pool.
+    data/cal_poly_all_majors.csv  Every Cal Poly bachelor's major with 4-year
+                                earnings, flagged CLA or not, sorted high to low.
+                                Use it to find non-CLA majors a CLA major out-earns.
 
 ## Two ways to compare
 

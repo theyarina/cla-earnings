@@ -78,6 +78,17 @@ def main():
             w.writerow(["Institution", "State", "Control", "Median earnings 4 years after graduating", "Cal Poly?"])
             for name, st, ctrl, e in recs:
                 w.writerow([name, st, ctrl, round(e), "Yes" if name == SLO else ""])
+        # Cal Poly + UC campuses only, for a clean UC comparison chart
+        uc_recs = [(n, e) for (n, s, c, e) in recs
+                   if n == SLO or n.startswith("University of California-")]
+        if any(n == SLO for n, _ in uc_recs) and len(uc_recs) > 1:
+            with open(os.path.join(REPO, "data", "vs_uc", m["slug"] + ".csv"), "w",
+                      newline="", encoding="utf-8") as f:
+                w = csv.writer(f)
+                w.writerow(["Institution", "Median earnings 4 years after graduating", "Cal Poly?"])
+                for name, e in uc_recs:
+                    short = name.replace("University of California-", "UC ")
+                    w.writerow([short, round(e), "Yes" if name == SLO else ""])
         # benchmarks
         allv = [e for _, _, _, e in recs]
         pubv = [e for _, _, c, e in recs if c == "Public"]

@@ -10,5 +10,5 @@ cip4,label,slug,cla_department,include
 4201,Psychology,psychology,Psychology & Child Development,yes
 5007,Art & Design,art-and-design,Art & Design,yes
 4599,Anthropology & Geography,anthropology-geography,Social Sciences,yes
-5005,Theatre Arts,theatre-arts,Theatre & Dance,no
-2401,Liberal Studies / Interdisciplinary,liberal-studies,PENDING - verify with Institutional Research (likely CSM Liberal Studies not CLA),no
+5005,Theatre Arts,theatre-arts,Theatre & Dance,yes
+2401,Liberal Studies / Interdisciplinary,liberal-studies,EXCLUDED - likely Bailey College (Science & Math) Liberal Studies teacher-prep not CLA; confirm with IR,no

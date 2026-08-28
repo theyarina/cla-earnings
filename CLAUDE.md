@@ -53,9 +53,13 @@ is always visible.
 
 - Comparison pool is public universities only (CONTROL = "Public"), bachelor's
   level only (CREDLEV = 3), Cal Poly excluded from its own peer median.
-- Theatre Arts is excluded on purpose: no earnings premium.
-- Liberal Studies / Interdisciplinary (CIP 2401) is excluded pending confirmation
-  from Institutional Research (likely CSM Liberal Studies, not CLA).
+- Theatre Arts is included but has no earnings premium (it trails every benchmark
+  and is the lowest-earning Cal Poly major). Use with care in public materials.
+- Liberal Studies / Interdisciplinary (CIP 2401) is EXCLUDED from CLA outputs: it is
+  most likely the Liberal Studies teacher-prep major in the Bailey College of
+  Science and Mathematics, not CLA. It still appears in cal_poly_all_majors.csv
+  flagged is_cla=no. Flip include to yes only if Institutional Research confirms it
+  is the CLA (ISLA) program.
 - Anthropology & Geography clears the national public median but falls below the
   California public median, and at the 1-year horizon it falls below the public
   median. Flag it rather than presenting it as a clean win.
