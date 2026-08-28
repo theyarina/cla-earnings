@@ -1,0 +1,4 @@
+key,default,source_file,column,horizon_label,cohort_award_years,measured_years,dollar_basis,verified
+4yr,yes,FieldOfStudyData2122_2223_PP.csv,EARN_MDN_4YR,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes
+1yr,no,FieldOfStudyData1920_2021_PP.csv,EARN_MDN_1YR,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no
+5yr,no,FieldOfStudyData1920_2021_PP.csv,EARN_MDN_5YR,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no

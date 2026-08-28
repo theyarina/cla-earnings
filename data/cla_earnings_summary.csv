@@ -1,12 +1,32 @@
-major,cip4,cal_poly,public_median,premium,national_percentile,n_public_peers,ca_public_median,ca_percentile,n_ca_public_peers,slug
-Philosophy,3801,98592,56330,42262,100.0,66,52264,100.0,14,philosophy
-Graphic Communication,1003,79432,44116,35316,100.0,25,58163,100.0,1,graphic-communication
-Political Science,4510,81843,58949,22894,99.7,333,61502,100.0,28,political-science
-Communication Studies,0901,75223,53965,21258,98.9,372,58391,95.2,21,communication-studies
-Sociology,4511,69883,51020,18864,99.4,330,55100,96.6,29,sociology
-Art & Design,5007,59721,41265,18456,99.1,329,42868,100.0,25,art-and-design
-Journalism,0904,70829,53618,17211,99.3,141,54594,100.0,8,journalism
-History,5401,66518,49986,16532,99.1,340,53481,100.0,27,history
-English,2301,63413,47150,16263,99.2,379,53147,100.0,27,english
-Psychology,4201,60466,49478,10988,97.8,491,52682,92.3,26,psychology
-Anthropology & Geography,4599,57360,54259,3101,73.9,23,68535,33.3,3,anthropology-geography
+major,metric,horizon,cohort_award_years,measured_years,dollar_basis,verified,cal_poly,public_median,premium,national_percentile,n_public_peers
+Philosophy,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,98592,56330,42262,100.0,66
+Graphic Communication,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,79432,44116,35316,100.0,25
+Political Science,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,81843,58949,22894,99.7,333
+Communication Studies,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,75223,53965,21258,98.9,372
+Sociology,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,69883,51020,18864,99.4,330
+Art & Design,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,59721,41265,18456,99.1,329
+Journalism,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,70829,53618,17211,99.3,141
+History,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,66518,49986,16532,99.1,340
+English,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,63413,47150,16263,99.2,379
+Psychology,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,60466,49478,10988,97.8,491
+Anthropology & Geography,4yr,4 years after graduating,2017-18 and 2018-19,2022 and 2023,2024 dollars,yes,57360,54259,3101,73.9,23
+Communication Studies,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,62183,34999,27184,100.0,348
+Graphic Communication,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,49029,29033,19996,100.0,22
+Journalism,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,48637,33252,15386,100.0,134
+Art & Design,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,36006,24941,11065,96.4,302
+English,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,34718,29580,5138,81.8,329
+Political Science,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,37003,34863,2140,66.9,311
+History,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,31540,30458,1082,55.7,305
+Sociology,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,30401,33915,-3514,22.1,298
+Psychology,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,23744,31217,-7473,3.9,461
+Anthropology & Geography,1yr,1 year after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,28931,38926,-9996,10.0,20
+Art & Design,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,87876,41048,46828,100.0,304
+Graphic Communication,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,87135,47694,39441,100.0,20
+Political Science,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,90264,59217,31047,100.0,306
+Sociology,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,75585,49424,26161,99.7,321
+English,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,64041,45484,18558,99.2,358
+Psychology,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,65762,48047,17715,98.7,473
+Communication Studies,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,67009,51762,15247,91.5,343
+Journalism,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,67804,52798,15006,95.3,128
+History,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,58207,48985,9222,89.7,339
+Anthropology & Geography,5yr,5 years after graduating,CONFIRM in glossary,CONFIRM,CONFIRM,no,45522,50270,-4748,25.0,24

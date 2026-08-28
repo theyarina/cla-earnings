@@ -3,31 +3,35 @@
 Build CLA earnings comparison files from raw College Scorecard Field of Study data.
 
 WHAT IT DOES
-  Reads one raw "FieldOfStudyData<year>_PP.csv" file from College Scorecard,
-  filters to the CLA majors listed in config/cla_majors.csv (include = yes),
-  and for each major compares Cal Poly SLO's median earnings 4 years after
-  completion against the median for OTHER PUBLIC universities offering the
-  same major. Writes Datawrapper-ready CSVs.
+  For each earnings horizon listed in config/earnings_metrics.csv (1 year, 4 year,
+  5 year), reads the matching raw College Scorecard file and compares Cal Poly SLO
+  against OTHER PUBLIC universities offering the same major. Writes chart-ready CSVs
+  with the graduating cohort and measurement year stamped into every file.
 
-ANNUAL UPDATE (the whole workflow)
-  1. Download the newest College Scorecard raw data zip from
-     https://collegescorecard.ed.gov/data/  and unzip it.
-  2. Run:
-       python scripts/build_cla_earnings.py \
-           --fos "path/to/FieldOfStudyData<newest>_PP.csv"
-     (optional, only if you want California-only columns too:)
-           --merged "path/to/MERGED<newest>_PP.csv"
-  3. Commit the changed files in data/ . The charts update automatically.
+WHY EACH HORIZON HAS ITS OWN FILE AND YEAR
+  College Scorecard measures earnings 1, 4, and 5 years after graduation, and each
+  horizon comes from a DIFFERENT graduating cohort measured in a different year.
+  They are separate snapshots, not the same students followed over time. The cohort
+  and measurement years for each horizon live in config/earnings_metrics.csv so the
+  year is always visible and travels with the data.
 
-EDITING WHICH MAJORS COUNT AS CLA
-  Edit config/cla_majors.csv . Set include to yes/no. Add or remove rows.
-  Nothing here is hard-coded to a major.
+ANNUAL UPDATE
+  1. Download the newest raw data zip from https://collegescorecard.ed.gov/data/
+     and unzip it somewhere.
+  2. Open config/earnings_metrics.csv and, for each horizon, confirm the source_file
+     name and the cohort / measured / dollar_basis values against the current
+     glossary (https://collegescorecard.ed.gov/data/glossary/). Update as needed.
+  3. Run, pointing --data-dir at the unzipped folder:
+        python scripts/build_cla_earnings.py --data-dir "path/to/unzipped/scorecard"
+  4. Commit the changed files in data/. The charts update automatically.
+
+WHICH MAJORS COUNT AS CLA
+  Edit config/cla_majors.csv (include = yes/no). Nothing is hard-coded here.
 """
 
 import argparse
 import csv
 import os
-import sys
 import statistics
 
 SLO_NAME = "California Polytechnic State University-San Luis Obispo"
@@ -36,135 +40,114 @@ REPO = os.path.dirname(HERE)
 
 
 def norm_cip(code):
-    """Normalize a CIP code to a 4-character, zero-padded string with no dot."""
     return str(code).replace(".", "").strip().zfill(4)
 
 
 def load_majors(path):
-    majors = []
+    out = []
     with open(path, newline="", encoding="utf-8-sig") as f:
         for row in csv.DictReader(f):
             if row["include"].strip().lower() == "yes":
                 row["cip4"] = norm_cip(row["cip4"])
-                majors.append(row)
-    return majors
+                out.append(row)
+    return out
 
 
-def load_state_map(merged_path):
-    """UNITID -> two-letter state, from a MERGED institution file. Optional."""
-    if not merged_path:
-        return None
-    state = {}
-    with open(merged_path, newline="", encoding="utf-8-sig") as f:
-        for row in csv.DictReader(f):
-            state[row["UNITID"]] = row.get("STABBR", "")
-    return state
+def load_metrics(path):
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        return list(csv.DictReader(f))
 
 
 def to_num(v):
     try:
         return float(v)
     except (ValueError, TypeError):
-        return None  # suppressed / blank / "PrivacySuppressed"
+        return None
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--fos", required=True, help="Field of Study raw CSV")
-    ap.add_argument("--merged", default=None, help="MERGED institution CSV (optional, enables CA columns)")
-    ap.add_argument("--config", default=os.path.join(REPO, "config", "cla_majors.csv"))
-    args = ap.parse_args()
-
-    majors = load_majors(args.config)
-    state_map = load_state_map(args.merged)
-
-    # Bucket bachelor-level rows by CIP for the majors we care about.
-    wanted = {m["cip4"] for m in majors}
-    # cip -> list of dicts {inst, control, state, earn}
-    buckets = {c: [] for c in wanted}
-
-    with open(args.fos, newline="", encoding="utf-8-sig") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row.get("CREDLEV") != "3":       # 3 = Bachelor's Degree
+def compute_metric(fos_path, column, majors):
+    """Return {cip4: (cal_poly, public_median, premium, percentile, n_peers) or None}."""
+    buckets = {m["cip4"]: [] for m in majors}
+    wanted = set(buckets)
+    with open(fos_path, newline="", encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            if row.get("CREDLEV") != "3":            # bachelor's only
                 continue
             cip = norm_cip(row.get("CIPCODE", ""))
             if cip not in wanted:
                 continue
-            earn = to_num(row.get("EARN_MDN_4YR"))
-            buckets[cip].append({
-                "inst": row.get("INSTNM", ""),
-                "control": row.get("CONTROL", ""),
-                "state": (state_map or {}).get(row.get("UNITID", ""), ""),
-                "earn": earn,
-            })
+            buckets[cip].append((row.get("INSTNM", ""), row.get("CONTROL", ""),
+                                 to_num(row.get(column))))
+    results = {}
+    for cip in wanted:
+        recs = buckets[cip]
+        slo = next((e for (n, c, e) in recs if n == SLO_NAME and e is not None), None)
+        pub = [e for (n, c, e) in recs if c == "Public" and n != SLO_NAME and e is not None]
+        if slo is None or not pub:
+            results[cip] = None
+            continue
+        med = statistics.median(pub)
+        pct = sum(1 for e in pub if e < slo) / len(pub) * 100
+        results[cip] = (slo, med, slo - med, pct, len(pub))
+    return results
 
-    summary_rows = []
-    for m in majors:
-        cip = m["cip4"]
-        recs = buckets.get(cip, [])
-        slo = next((r for r in recs if r["inst"] == SLO_NAME and r["earn"] is not None), None)
-        cp = slo["earn"] if slo else None
 
-        pub = [r["earn"] for r in recs
-               if r["control"] == "Public" and r["inst"] != SLO_NAME and r["earn"] is not None]
-        pub_median = statistics.median(pub) if pub else None
-        pct = (sum(1 for e in pub if e < cp) / len(pub) * 100) if (cp is not None and pub) else None
-        premium = (cp - pub_median) if (cp is not None and pub_median is not None) else None
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--data-dir", required=True,
+                    help="Folder containing the unzipped raw Scorecard CSV files")
+    ap.add_argument("--majors", default=os.path.join(REPO, "config", "cla_majors.csv"))
+    ap.add_argument("--metrics", default=os.path.join(REPO, "config", "earnings_metrics.csv"))
+    args = ap.parse_args()
 
-        ca_median = ca_pct = ca_n = None
-        if state_map is not None:
-            pub_ca = [r["earn"] for r in recs
-                      if r["control"] == "Public" and r["inst"] != SLO_NAME
-                      and r["state"] == "CA" and r["earn"] is not None]
-            if pub_ca:
-                ca_median = statistics.median(pub_ca)
-                ca_pct = (sum(1 for e in pub_ca if e < cp) / len(pub_ca) * 100) if cp is not None else None
-                ca_n = len(pub_ca)
+    majors = load_majors(args.majors)
+    metrics = load_metrics(args.metrics)
+    label_by_cip = {m["cip4"]: m["label"] for m in majors}
+    slug_by_cip = {m["cip4"]: m["slug"] for m in majors}
 
-        summary_rows.append({
-            "major": m["label"], "slug": m["slug"], "cip4": cip,
-            "cal_poly": cp, "public_median": pub_median,
-            "premium": premium, "national_percentile": pct, "n_public_peers": len(pub),
-            "ca_public_median": ca_median, "ca_percentile": ca_pct, "n_ca_public_peers": ca_n,
-        })
-
-        # Per-major 2-row file for a clean department bar chart.
-        if cp is not None and pub_median is not None:
-            per_path = os.path.join(REPO, "data", "by_major", m["slug"] + ".csv")
-            with open(per_path, "w", newline="", encoding="utf-8") as f:
-                w = csv.writer(f)
-                w.writerow(["Group", "Median earnings 4 years after graduating"])
-                w.writerow(["Cal Poly SLO", round(cp)])
-                w.writerow(["Other public universities (median)", round(pub_median)])
-
-    # Summary file: powers the college-level chart and is the "play with the data" file.
     summary_path = os.path.join(REPO, "data", "cla_earnings_summary.csv")
-    fields = ["major", "cip4", "cal_poly", "public_median", "premium",
-              "national_percentile", "n_public_peers",
-              "ca_public_median", "ca_percentile", "n_ca_public_peers", "slug"]
-    with open(summary_path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=fields)
-        w.writeheader()
-        for r in sorted(summary_rows, key=lambda x: -(x["premium"] or -1e9)):
-            out = dict(r)
-            for k in ("cal_poly", "public_median", "premium", "ca_public_median"):
-                if out[k] is not None:
-                    out[k] = round(out[k])
-            for k in ("national_percentile", "ca_percentile"):
-                if out[k] is not None:
-                    out[k] = round(out[k], 1)
-            w.writerow({k: out.get(k, "") for k in fields})
+    summary_fields = ["major", "metric", "horizon", "cohort_award_years", "measured_years",
+                      "dollar_basis", "verified", "cal_poly", "public_median", "premium",
+                      "national_percentile", "n_public_peers"]
+    summary_rows = []
 
-    print("Wrote:", summary_path)
-    print("Wrote per-major files to:", os.path.join(REPO, "data", "by_major"))
-    print("\nSummary (public-university comparison):")
-    for r in sorted(summary_rows, key=lambda x: -(x["premium"] or -1e9)):
-        prem = f"{r['premium']:+,.0f}" if r["premium"] is not None else "n/a"
-        pct = f"{r['national_percentile']:.0f}th pct" if r["national_percentile"] is not None else "n/a"
-        print(f"  {r['major']:<26} Cal Poly ${r['cal_poly'] or 0:>7,.0f}  "
-              f"vs public ${r['public_median'] or 0:>7,.0f}  premium {prem:>9}  "
-              f"{pct}  (n={r['n_public_peers']})")
+    for met in metrics:
+        fos = os.path.join(args.data_dir, met["source_file"])
+        if not os.path.exists(fos):
+            print(f"  [skip] {met['key']}: file not found: {met['source_file']}")
+            continue
+        res = compute_metric(fos, met["column"], majors)
+        header = (f"Median earnings, {met['horizon_label']} "
+                  f"({met['cohort_award_years']} graduates, {met['dollar_basis']})")
+        wrote = 0
+        for cip, vals in res.items():
+            if vals is None:
+                continue
+            cp, med, prem, pct, n = vals
+            slug = slug_by_cip[cip]
+            name = (slug + ".csv") if met["default"].strip().lower() == "yes" else f"{slug}_{met['key']}.csv"
+            with open(os.path.join(REPO, "data", "by_major", name), "w", newline="", encoding="utf-8") as f:
+                w = csv.writer(f)
+                w.writerow(["Group", header])
+                w.writerow(["Cal Poly SLO", round(cp)])
+                w.writerow(["Other public universities (median)", round(med)])
+            wrote += 1
+            summary_rows.append({
+                "major": label_by_cip[cip], "metric": met["key"], "horizon": met["horizon_label"],
+                "cohort_award_years": met["cohort_award_years"], "measured_years": met["measured_years"],
+                "dollar_basis": met["dollar_basis"], "verified": met["verified"],
+                "cal_poly": round(cp), "public_median": round(med), "premium": round(prem),
+                "national_percentile": round(pct, 1), "n_public_peers": n,
+            })
+        print(f"  {met['key']}: wrote {wrote} major files from {met['source_file']}")
+
+    order = {m["key"]: i for i, m in enumerate(metrics)}
+    summary_rows.sort(key=lambda r: (order.get(r["metric"], 9), -r["premium"]))
+    with open(summary_path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=summary_fields)
+        w.writeheader()
+        w.writerows(summary_rows)
+    print(f"\nWrote summary: {summary_path}  ({len(summary_rows)} rows)")
 
 
 if __name__ == "__main__":
